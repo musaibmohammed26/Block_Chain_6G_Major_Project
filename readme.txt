@@ -1,3 +1,17 @@
+## 👥 Team
+
+| Name                    | Roll No      |
+| ----------------------- | ------------ |
+| Mohammad Musaib         | 160922748157 |
+| Omer Farooque           | 160922748135 |
+| Muhaimin Akhtar Shareef | 160922748139 |
+
+**Project Guide:** Ms. Aradhana, Assistant Professor
+
+**Co-Guide / HoD:** Dr. Abdul Rasool Mohammed, Associate Professor & Head of Department
+
+**Institution:** Lords Institute of Engineering and Technology
+
 🚀 6G Blockchain System — Management Dashboard (Django + Channels)
 
 A role-based blockchain administration platform with real-time ready architecture using Django, MySQL, and WebSockets.
