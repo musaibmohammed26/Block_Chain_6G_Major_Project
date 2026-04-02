@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Storage Management - 6G Blockchain System{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 text-dark">
+                <i class="fas fa-database me-2"></i>Storage Management
+            </h1>
+            <p class="text-muted">Hybrid on-chain and off-chain storage mechanism</p>
+        </div>
+    </div>
+
+    <!-- Storage Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Storage Records</h6>
+                    <h2 class="text-info">{{ storage_records|length }}</h2>
+                    <small class="text-muted">active records</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">On-Chain Storage</h6>
+                    <h2 class="text-success">{{ onchain_size|filesizeformat }}</h2>
+                    <small class="text-muted">blockchain</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Off-Chain Storage</h6>
+                    <h2 class="text-warning">{{ offchain_size|filesizeformat }}</h2>
+                    <small class="text-muted">distributed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total Capacity</h6>
+                    <h2 class="text-primary">
+                        {% with total=onchain_size|add:offchain_size %}
+                            {{ total|filesizeformat }}
+                        {% endwith %}
+                    </h2>
+                    <small class="text-muted">all storage</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hybrid Storage Policy Info -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2"></i>Hybrid Storage Policy
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-dark"><span class="badge bg-success me-2">ON-CHAIN</span>Blockchain Component</h6>
+                    <p class="text-muted">Stores metadata, transaction proofs, and critical state information directly on the blockchain. Limited to small data sizes (&lt;500 bytes) for optimal blockchain performance.</p>
+                    <ul class="text-muted small">
+                        <li>Immutable storage</li>
+                        <li>Full consensus verification</li>
+                        <li>Indexable on blockchain</li>
+                        <li>Higher verification cost</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-dark"><span class="badge bg-warning text-dark me-2">OFF-CHAIN</span>Distributed Component</h6>
+                    <p class="text-muted">Stores large data volumes in distributed systems (IPFS, cloud storage). Referenced from blockchain via content hash. Optimized for scalability and cost efficiency.</p>
+                    <ul class="text-muted small">
+                        <li>Cost-efficient storage</li>
+                        <li>High scalability</li>
+                        <li>Content-addressable (IPFS)</li>
+                        <li>Lower retrieval latency</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Records Table -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Storage Records
+            </h5>
+        </div>
+        <div class="table-responsive">
+            {% if storage_records %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Storage ID</th>
+                            <th>Transaction Hash</th>
+                            <th>Sender</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Storage Location</th>
+                            <th>Data Hash</th>
+                            <th>Timestamp</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in storage_records %}
+                            <tr class="align-middle">
+                                <td>
+                                    <code class="text-primary">{{ record.id|truncatechars:12 }}</code>
+                                </td>
+                                <td>
+                                    <code class="text-secondary">{{ record.transaction.transaction_hash|truncatechars:12 }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ record.transaction.sender.node_id|default:"N/A" }}</span>
+                                </td>
+                                <td>
+                                    {% if record.storage_type == "ON_CHAIN" %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-link me-1"></i>{{ record.storage_type }}
+                                        </span>
+                                    {% elif record.storage_type == "OFF_CHAIN" %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-cloud me-1"></i>{{ record.storage_type }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ record.size_bytes|filesizeformat }}</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ record.storage_location|truncatechars:50 }}</small>
+                                </td>
+                                <td>
+                                    <code class="text-secondary" style="font-size: 0.85rem;">{{ record.data_hash|truncatechars:12 }}</code>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ record.timestamp|date:"M d, H:i" }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">Active</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info m-4" role="alert">
+                    <i class="fas fa-inbox me-2"></i>
+                    <strong>No storage records found.</strong> Storage records will appear here as transactions are processed.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f5f5f5;
+    border-bottom: 2px solid #0d6efd;
+    color: #000000;
+    font-weight: bold;
+}
+
+.card-body {
+    color: #000000;
+}
+
+.text-dark {
+    color: #000000 !important;
+}
+
+.text-black {
+    color: #000000 !important;
+}
+
+.text-muted {
+    color: #666666 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #000000;
+}
+</style>
+{% endblock %}

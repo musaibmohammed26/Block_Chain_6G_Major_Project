@@ -1,0 +1,692 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - 6G Blockchain System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Admin Dashboard Header -->
+    <div class="dashboard-header mb-5">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="text-dark display-5 mb-2">
+                    <i class="fas fa-crown me-3"></i>Admin Control Panel
+                </h1>
+                <p class="text-muted">
+                    System Administration & Monitoring Dashboard
+                </p>
+            </div>
+            <div class="col-auto">
+                <div class="badge bg-danger"><i class="fas fa-shield-alt me-1"></i>Admin Access</div>
+            </div>
+        </div>
+        <p class="text-muted mt-3">
+            <i class="fas fa-calendar-alt me-1"></i>
+            {{ "now"|date:"l, F j, Y" }} | 
+            <i class="fas fa-clock me-1"></i>
+            {{ "now"|date:"H:i A" }}
+        </p>
+    </div>
+
+    <!-- User Management Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card card bg-user">
+                <div class="card-body">
+                    <div class="stat-number text-danger" id="totalUsers">{{ total_users }}</div>
+                    <div class="stat-label">Total Users</div>
+                    <small class="text-muted">
+                        <i class="fas fa-user-check me-1"></i>{{ active_users }} Active
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card card bg-admin">
+                <div class="card-body">
+                    <div class="stat-number text-warning">{{ staff_users }}</div>
+                    <div class="stat-label">Admin Staff</div>
+                    <small class="text-muted">
+                        <i class="fas fa-user-shield me-1"></i>Management Team
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card bg-node">
+                <div class="card-body">
+                    <div class="stat-number text-success" id="totalNodes">{{ total_nodes }}</div>
+                    <div class="stat-label">Total Nodes</div>
+                    <small class="text-muted">
+                        <i class="fas fa-check-circle me-1"></i><span id="activeNodes">{{ active_nodes }}</span> Active
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card card bg-shard">
+                <div class="card-body">
+                    <div class="stat-number text-info" id="totalShards">{{ total_shards }}</div>
+                    <div class="stat-label">Active Shards</div>
+                    <small class="text-muted">
+                        <i class="fas fa-sitemap me-1"></i>Distributed
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction & Performance Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card card bg-info-light">
+                <div class="card-body">
+                    <div class="stat-number text-info">{{ total_transactions }}</div>
+                    <div class="stat-label">Total Transactions</div>
+                    <small class="text-muted">
+                        <i class="fas fa-exchange-alt me-1"></i>All Time
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card bg-warning-light">
+                <div class="card-body">
+                    <div class="stat-number text-warning" id="pendingTransactions">{{ pending_transactions }}</div>
+                    <div class="stat-label">Pending TX</div>
+                    <small class="text-muted">
+                        <i class="fas fa-hourglass-half me-1"></i>Awaiting Processing
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card bg-success-light">
+                <div class="card-body">
+                    <div class="stat-number text-success" id="confirmedTransactions">{{ confirmed_transactions }}</div>
+                    <div class="stat-label">Confirmed TX</div>
+                    <small class="text-muted">
+                        <i class="fas fa-check-circle me-1"></i>Successfully Processed
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card bg-danger-light">
+                <div class="card-body">
+                    <div class="stat-number text-danger" id="failedTransactions">{{ failed_transactions }}</div>
+                    <div class="stat-label">Failed TX</div>
+                    <small class="text-muted">
+                        <i class="fas fa-times-circle me-1"></i>Requires Review
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Status & System Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-server me-2"></i>Node Status Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="status-breakdown mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-check-circle text-success me-2"></i>Active</span>
+                            <span class="badge bg-success">{{ active_nodes }}</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {% widthratio active_nodes total_nodes 100 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="status-breakdown mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-circle text-secondary me-2"></i>Inactive</span>
+                            <span class="badge bg-secondary">{{ inactive_nodes }}</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-secondary" style="width: {% widthratio inactive_nodes total_nodes 100 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="status-breakdown">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-ban text-danger me-2"></i>Suspended</span>
+                            <span class="badge bg-danger">{{ suspended_nodes }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-danger" style="width: {% widthratio suspended_nodes total_nodes 100 %}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>System Health
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="health-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-database me-2"></i>Database</span>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="health-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-network-wired me-2"></i>Network</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="health-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-tachometer-alt me-2"></i>Performance</span>
+                            <span class="badge bg-success">Optimal</span>
+                        </div>
+                    </div>
+                    <div class="health-metric">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-star me-2"></i>Avg Reputation</span>
+                            <span class="badge bg-info">{{ avg_reputation|floatformat:1 }}/10</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sync-alt me-2"></i>Consensus Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="consensus-stat mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-spinner me-2"></i>Active Rounds</span>
+                            <span class="badge bg-warning" id="activeConsensus">{{ active_consensus }}</span>
+                        </div>
+                    </div>
+                    <div class="consensus-stat">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-clock me-2"></i>Transactions/Hour</span>
+                            <span class="badge bg-info">{{ recent_tx_count }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="{% url 'consensus_monitor' %}" class="btn btn-sm btn-outline-success w-100 mt-2">
+                        <i class="fas fa-monitor me-1"></i>View Consensus Monitor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Management Panels -->
+    <div class="row mb-4">
+        <!-- Recent Transactions -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Recent Transactions (Admin Review)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-1"></i>Hash</th>
+                                    <th><i class="fas fa-exchange me-1"></i>Type</th>
+                                    <th><i class="fas fa-list me-1"></i>Status</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions %}
+                                <tr class="transaction-row" data-tx-hash="{{ tx.transaction_hash }}">
+                                    <td>
+                                        <code>{{ tx.transaction_hash|truncatechars:16 }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ tx.get_transaction_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if tx.status == 'CONFIRMED' %}
+                                            <span class="badge bg-success status-badge"><i class="fas fa-check"></i> Confirmed</span>
+                                        {% elif tx.status == 'PENDING' %}
+                                            <span class="badge bg-warning status-badge"><i class="fas fa-clock"></i> Pending</span>
+                                        {% elif tx.status == 'PROCESSING' %}
+                                            <span class="badge bg-primary status-badge"><i class="fas fa-spinner"></i> Processing</span>
+                                        {% else %}
+                                            <span class="badge bg-danger status-badge"><i class="fas fa-times"></i> Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ tx.created_at|date:"M d, H:i" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-3 text-center text-muted">
+                        <i class="fas fa-inbox me-2"></i>No recent transactions
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'transactions' %}" class="text-decoration-none">
+                        <i class="fas fa-arrow-right ms-1"></i>View All Transactions & Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>Admin Controls
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'user_management' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-users me-2 text-danger"></i>Manage Users
+                        <span class="badge bg-danger float-end">{{ total_users }}</span>
+                    </a>
+                    <a href="{% url 'node_management' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-server me-2 text-success"></i>Manage Nodes
+                        <span class="badge bg-success float-end">{{ total_nodes }}</span>
+                    </a>
+                    <a href="{% url 'shard_management' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-sitemap me-2 text-info"></i>Manage Shards
+                        <span class="badge bg-info float-end">{{ total_shards }}</span>
+                    </a>
+                    <a href="{% url 'transactions' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-exchange-alt me-2 text-warning"></i>Transactions
+                        <span class="badge bg-warning float-end">{{ pending_transactions }}</span>
+                    </a>
+                    <a href="{% url 'consensus_monitor' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-sync-alt me-2 text-primary"></i>Consensus Monitor
+                    </a>
+                    <a href="{% url 'storage_management' %}" class="list-group-item list-group-item-action admin-action">
+                        <i class="fas fa-database me-2 text-secondary"></i>Storage Management
+                    </a>
+                </div>
+            </div>
+
+            <!-- Admin Alerts -->
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>System Alerts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_transactions > 0 %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-hourglass-half me-2"></i>
+                        <strong>{{ pending_transactions }}</strong> pending transaction(s) need review
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if failed_transactions > 0 %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>{{ failed_transactions }}</strong> transaction(s) failed
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    {% if inactive_nodes > 0 %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-circle me-2"></i>
+                        <strong>{{ inactive_nodes }}</strong> node(s) are inactive
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    {% if suspended_nodes > 0 %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-ban me-2"></i>
+                        <strong>{{ suspended_nodes }}</strong> node(s) are suspended
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    {% if not pending_transactions and not failed_transactions and not inactive_nodes and not suspended_nodes %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>All systems operating normally
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Data Tables -->
+    <!-- Recently Active Nodes for Admin -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-server me-2"></i>Node Management (Active Nodes)
+                        </h5>
+                        <a href="{% url 'node_management' %}" class="btn btn-sm btn-light">
+                            <i class="fas fa-cog me-1"></i>Manage All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_nodes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-server me-1"></i>Node ID</th>
+                                    <th><i class="fas fa-microchip me-1"></i>Type</th>
+                                    <th><i class="fas fa-globe me-1"></i>IP Address</th>
+                                    <th><i class="fas fa-star me-1"></i>Reputation</th>
+                                    <th><i class="fas fa-circle me-1"></i>Status</th>
+                                    <th><i class="fas fa-clock me-1"></i>Last Seen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for node in recent_nodes %}
+                                <tr class="node-row">
+                                    <td>
+                                        <code class="fw-bold">{{ node.node_id }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ node.get_node_type_display }}</span>
+                                    </td>
+                                    <td>{{ node.ip_address }}</td>
+                                    <td>
+                                        <span class="text-success">★ {{ node.reputation_score|floatformat:1 }}/10</span>
+                                    </td>
+                                    <td>
+                                        {% if node.status == 'ACTIVE' %}
+                                            <span class="status-indicator status-active"></span><span class="badge bg-success">Active</span>
+                                        {% elif node.status == 'INACTIVE' %}
+                                            <span class="status-indicator status-inactive"></span><span class="badge bg-secondary">Inactive</span>
+                                        {% else %}
+                                            <span class="status-indicator status-suspended"></span><span class="badge bg-danger">Suspended</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ node.last_seen|date:"M d, H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-3 text-center text-muted">
+                        <i class="fas fa-inbox me-2"></i>No nodes available
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Administration Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users me-2"></i>User Administration ({{ total_users }} Total Users)
+                        </h5>
+                        <a href="{% url 'user_management' %}" class="btn btn-sm btn-light">
+                            <i class="fas fa-cog me-1"></i>Manage Users
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if all_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-user me-1"></i>Username</th>
+                                    <th><i class="fas fa-envelope me-1"></i>Email</th>
+                                    <th><i class="fas fa-id-card me-1"></i>Full Name</th>
+                                    <th><i class="fas fa-shield-alt me-1"></i>Role</th>
+                                    <th><i class="fas fa-check-circle me-1"></i>Status</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Member Since</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in all_users|slice:":20" %}
+                                <tr class="user-row">
+                                    <td>
+                                        <span class="fw-bold">{{ user.username }}</span>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.get_full_name|default:"---" }}</td>
+                                    <td>
+                                        {% if user.is_superuser %}
+                                            <span class="badge bg-danger"><i class="fas fa-crown me-1"></i>Super Admin</span>
+                                        {% elif user.is_staff %}
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-user-shield me-1"></i>Admin</span>
+                                        {% else %}
+                                            <span class="badge bg-success"><i class="fas fa-user me-1"></i>User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary"><i class="fas fa-ban"></i> Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ user.date_joined|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-3 text-center text-muted">
+                        <i class="fas fa-inbox me-2"></i>No registered users yet
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">Showing first 20 users | <a href="{% url 'user_management' %}">View all users</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Admin Dashboard Specific Styles */
+.dashboard-header {
+    border-bottom: 3px solid #0d6efd;
+    padding-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 1px solid #dee2e6;
+    border-left: 5px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(13, 110, 253, 0.2);
+    border-left-color: #ff6b6b;
+}
+
+.stat-card.bg-user {
+    border-left-color: #ff6b6b;
+}
+
+.stat-card.bg-admin {
+    border-left-color: #ffc107;
+}
+
+.stat-card.bg-node {
+    border-left-color: #28a745;
+}
+
+.stat-card.bg-shard {
+    border-left-color: #17a2b8;
+}
+
+.stat-card.bg-info-light {
+    border-left-color: #17a2b8;
+}
+
+.stat-card.bg-warning-light {
+    border-left-color: #ffc107;
+}
+
+.stat-card.bg-success-light {
+    border-left-color: #28a745;
+}
+
+.stat-card.bg-danger-light {
+    border-left-color: #dc3545;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.transaction-row:hover,
+.node-row:hover,
+.user-row:hover {
+    background-color: #f0f7ff !important;
+}
+
+.admin-action {
+    transition: all 0.2s;
+}
+
+.admin-action:hover {
+    background-color: #f0f7ff !important;
+    transform: translateX(5px);
+    border-left: 3px solid #0d6efd;
+}
+
+.health-metric {
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #0d6efd;
+}
+
+.consensus-stat {
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.status-breakdown {
+    padding: 0.5rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-header.bg-danger { background-color: #dc3545 !important; }
+.card-header.bg-primary { background-color: #0d6efd !important; }
+.card-header.bg-info { background-color: #0dcaf0 !important; }
+.card-header.bg-success { background-color: #198754 !important; }
+.card-header.bg-dark { background-color: #212529 !important; }
+
+.card-header.bg-danger,
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-success,
+.card-header.bg-dark {
+    color: #ffffff !important;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #0d6efd;
+    font-weight: bold;
+}
+
+code {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+}
+
+.alert {
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}

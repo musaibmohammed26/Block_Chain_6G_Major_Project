@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - 6G Blockchain System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- User Dashboard Header -->
+    <div class="dashboard-header mb-5">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="text-dark display-5 mb-2">
+                    <i class="fas fa-user-circle me-3"></i>Welcome, {{ current_user.get_full_name|default:current_user.username }}
+                </h1>
+                <p class="text-muted">
+                    Your 6G Blockchain Network Dashboard
+                </p>
+            </div>
+            <div class="col-auto">
+                <div class="badge bg-primary"><i class="fas fa-user me-1"></i>User Account</div>
+            </div>
+        </div>
+        <p class="text-muted mt-3">
+            <i class="fas fa-calendar-alt me-1"></i>
+            {{ "now"|date:"l, F j, Y" }} | 
+            <i class="fas fa-clock me-1"></i>
+            {{ "now"|date:"H:i A" }}
+        </p>
+    </div>
+
+    <!-- User Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card card user-stat">
+                <div class="card-body">
+                    <div class="stat-number text-primary">{{ user_transactions }}</div>
+                    <div class="stat-label">My Transactions</div>
+                    <small class="text-muted">
+                        <i class="fas fa-history me-1"></i>Total All Time
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card card user-stat">
+                <div class="card-body">
+                    <div class="stat-number text-warning">{{ pending_user_tx }}</div>
+                    <div class="stat-label">Pending TX</div>
+                    <small class="text-muted">
+                        <i class="fas fa-hourglass-half me-1"></i>Awaiting Confirmation
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card card user-stat">
+                <div class="card-body">
+                    <div class="stat-number text-info">{{ total_users }}</div>
+                    <div class="stat-label">Network Users</div>
+                    <small class="text-muted">
+                        <i class="fas fa-users me-1"></i>Connected Peers
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Overview (Read-Only) -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="info-card card">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fs-2 text-success mb-3"></i>
+                    <div class="stat-number">{{ total_nodes }}</div>
+                    <div class="stat-label">Active Nodes</div>
+                    <small class="text-success"><i class="fas fa-check-circle me-1"></i>{{ active_nodes }} Online</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="info-card card">
+                <div class="card-body text-center">
+                    <i class="fas fa-sitemap fs-2 text-info mb-3"></i>
+                    <div class="stat-number">{{ total_shards }}</div>
+                    <div class="stat-label">Active Shards</div>
+                    <small class="text-info"><i class="fas fa-share-alt me-1"></i>Distributed Network</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Account Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row mb-3">
+                        <span class="fw-bold"><i class="fas fa-user me-2"></i>Username:</span>
+                        <span class="float-end">{{ current_user.username }}</span>
+                    </div>
+                    <div class="info-row mb-3">
+                        <span class="fw-bold"><i class="fas fa-envelope me-2"></i>Email:</span>
+                        <span class="float-end">{{ current_user.email }}</span>
+                    </div>
+                    <div class="info-row mb-3">
+                        <span class="fw-bold"><i class="fas fa-id-card me-2"></i>Full Name:</span>
+                        <span class="float-end">{{ current_user.get_full_name|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="fw-bold"><i class="fas fa-calendar me-2"></i>Member Since:</span>
+                        <span class="float-end">{{ current_user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Main Content -->
+    <div class="row mb-4">
+        <!-- My Recent Transactions -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>My Recent Transactions
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-1"></i>Hash</th>
+                                    <th><i class="fas fa-exchange me-1"></i>Type</th>
+                                    <th><i class="fas fa-list me-1"></i>Status</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions|slice:":10" %}
+                                <tr class="transaction-row">
+                                    <td>
+                                        <code>{{ tx.transaction_hash|truncatechars:16 }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ tx.get_transaction_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if tx.status == 'CONFIRMED' %}
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>
+                                        {% elif tx.status == 'PENDING' %}
+                                            <span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>
+                                        {% elif tx.status == 'PROCESSING' %}
+                                            <span class="badge bg-primary"><i class="fas fa-spinner"></i> Processing</span>
+                                        {% else %}
+                                            <span class="badge bg-danger"><i class="fas fa-times"></i> Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ tx.created_at|date:"M d, H:i" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No transactions yet</p>
+                        <small>Your transactions will appear here</small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{% url 'transactions' %}" class="text-decoration-none">
+                        <i class="fas fa-arrow-right ms-1"></i>View All My Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Quick Actions & Status -->
+        <div class="col-lg-4">
+            <!-- Quick Links -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link me-2"></i>Quick Links
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'transactions' %}" class="list-group-item list-group-item-action user-action">
+                        <i class="fas fa-exchange-alt me-2 text-primary"></i>My Transactions
+                        <span class="badge bg-primary float-end">{{ user_transactions }}</span>
+                    </a>
+                    <a href="{% url 'consensus_monitor' %}" class="list-group-item list-group-item-action user-action">
+                        <i class="fas fa-sync-alt me-2 text-success"></i>Network Status
+                    </a>
+                    <a href="{% url 'node_management' %}" class="list-group-item list-group-item-action user-action">
+                        <i class="fas fa-server me-2 text-info"></i>Explore Nodes
+                    </a>
+                    <a href="{% url 'storage_management' %}" class="list-group-item list-group-item-action user-action">
+                        <i class="fas fa-database me-2 text-secondary"></i>Storage Info
+                    </a>
+                    <a href="{% url 'password_change' %}" class="list-group-item list-group-item-action user-action">
+                        <i class="fas fa-key me-2 text-warning"></i>Change Password
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>Network Health
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="health-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-database me-2"></i>Database</span>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="health-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-network-wired me-2"></i>Network</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="health-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-tachometer-alt me-2"></i>Performance</span>
+                            <span class="badge bg-success">Optimal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Overview (Informational) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-server me-2"></i>Network Overview (Active Nodes)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_nodes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-server me-1"></i>Node ID</th>
+                                    <th><i class="fas fa-microchip me-1"></i>Type</th>
+                                    <th><i class="fas fa-globe me-1"></i>IP Address</th>
+                                    <th><i class="fas fa-circle me-1"></i>Status</th>
+                                    <th><i class="fas fa-clock me-1"></i>Last Seen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for node in recent_nodes %}
+                                <tr class="node-row">
+                                    <td>
+                                        <code class="fw-bold">{{ node.node_id }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ node.get_node_type_display }}</span>
+                                    </td>
+                                    <td>{{ node.ip_address }}</td>
+                                    <td>
+                                        {% if node.status == 'ACTIVE' %}
+                                            <span class="status-indicator status-active"></span><span class="badge bg-success">Active</span>
+                                        {% elif node.status == 'INACTIVE' %}
+                                            <span class="status-indicator status-inactive"></span><span class="badge bg-secondary">Inactive</span>
+                                        {% else %}
+                                            <span class="status-indicator status-suspended"></span><span class="badge bg-danger">Suspended</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ node.last_seen|date:"M d, H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No active nodes available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* User Dashboard Styles */
+.dashboard-header {
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+    border: 1px solid #d0e0ff;
+    border-left: 5px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(13, 110, 253, 0.15);
+}
+
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #0d6efd;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-row {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.transaction-row {
+    border-color: #e0e0e0;
+}
+
+.transaction-row:hover {
+    background-color: #f0f7ff;
+}
+
+.node-row {
+    border-color: #e0e0e0;
+}
+
+.node-row:hover {
+    background-color: #f0f7ff;
+}
+
+.health-item {
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #0dcaf0;
+}
+
+code {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-header.bg-primary { background-color: #0d6efd !important; }
+.card-header.bg-info { background-color: #0dcaf0 !important; }
+.card-header.bg-success { background-color: #198754 !important; }
+
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-success {
+    color: #ffffff !important;
+}
+
+.card-body {
+    color: #000000;
+}
+
+.table {
+    background-color: #ffffff;
+    color: #000000;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #0d6efd;
+    color: #000000;
+    font-weight: bold;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-card,
+.info-card {
+    background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+    border: 1px solid #d0e0ff;
+    border-left: 5px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover,
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(13, 110, 253, 0.15);
+}
+
+.stat-number {
+    color: #0d6efd;
+    font-weight: bold;
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-action {
+    transition: all 0.2s;
+}
+
+.user-action:hover {
+    background-color: #f0f7ff !important;
+    transform: translateX(5px);
+    border-left: 3px solid #0d6efd;
+}
+
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
